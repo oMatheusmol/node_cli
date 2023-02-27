@@ -23,7 +23,7 @@ pub fn create_project(project_name: &str, language: &str) {
     create_p10k_file(project_name).unwrap();
     install_dependencies(project_name).unwrap();
     format_files(project_name).unwrap();
-    // start_git(project_name).unwrap();
+    start_git(project_name).unwrap();
     open_vscode(project_name).unwrap();
 }
 
