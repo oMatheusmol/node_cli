@@ -17,7 +17,7 @@
     <li>Build the project: <code>cargo build</code></li>
     <li>
       Move the generated executable to a convenient folder in your PATH, for
-      example: <code>mv target/debug/rust_cli ~/../bin/{YOUR_KEY}</code>, where
+      example: <code>mv target/debug/node_cli ~/../bin/{YOUR_KEY}</code>, where
       <code>{YOUR_KEY}</code> is a unique identifier for your executable, such
       as <code>cli</code>.
     </li>
