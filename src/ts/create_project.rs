@@ -60,45 +60,17 @@ fn create_dot_docker_folder(project_name: &str) -> std::io::Result<()> {
 
 fn create_docker_compose_yml(project_name: &str) -> std::io::Result<()> {
     let mut docker_compose = fs::File::create(format!(
-        "{}/.devcontainer/docker-compose.yaml",
+        "{}/.devcontainer/docker-compose.yml",
         project_name
     ))?;
     docker_compose
         .write_all("version: '3'
 services:
-    # Update this to the name of the service you want to work with in your docker-compose.yml file
-    app:
-    # If you want add a non-root user to your Dockerfile, you can use the 'remoteUser'
-    # property in devcontainer.json to cause VS Code its sub-processes (terminals, tasks, 
-    # debugging) to execute as the user. Uncomment the next line if you want the entire 
-    # container to run as this user instead. Note that, on Linux, you may need to 
-    # ensure the UID and GID of the container user you create matches your local user. 
-    # See https://aka.ms/vscode-remote/containers/non-root for details.
-    #
-    # user: vscode
-
-    # Uncomment if you want to override the service's Dockerfile to one in the .devcontainer 
-    # folder. Note that the path of the Dockerfile and context is relative to the *primary* 
-    # docker-compose.yml file (the first in the devcontainer.json 'dockerComposeFile'
-    # array). The sample below assumes your primary file is in the root of your project.
-    #
-    # build:
-    #   context: .
-    #   dockerfile: .devcontainer/Dockerfile
-
-    volumes:
-        # Update this to wherever you want VS Code to mount the folder of your project
-        - .:/home/node/app:cached
-
-        # Uncomment the next line to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker-compose for details.
-        # - /var/run/docker.sock:/var/run/docker.sock 
-
-    # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
-    # cap_add:
-    #   - SYS_PTRACE
-    # security_opt:
-    #   - seccomp:unconfined
-         ".as_bytes()).unwrap();
+    app:  
+        volumes:
+            - ..:/workspaces:cached
+        command: /bin/sh -c 'while sleep 1000; do :; done'
+        ".replace("'", "\"").as_bytes()).unwrap();
     Ok(())
 }
 
@@ -107,14 +79,19 @@ fn create_devcontainer_json_file(project_name: &str) -> std::io::Result<()> {
         fs::File::create(format!("{}/.devcontainer/devcontainer.json", project_name))?;
     devcontainer.write_all("{
         'name': 'TypeScript App',
-        'dockerComposeFile': ['../docker-compose.yaml', '../docker-compose.override.yaml', 'docker-compose.yml'],
+        'dockerComposeFile': [
+            '../docker-compose.yml',
+            '../docker-compose.override.yml',
+            'docker-compose.yml'
+        ],
         'service': 'app',
-        'workspaceFolder': '/home/node/app',
         'settings': {
-          'terminal.integrated.defaultProfile.linux': 'zsh'
-        },
+            'terminal.integrated.defaultProfile.linux': 'zsh'
+          },
+        'workspaceFolder': '/home/node/app',
         'extensions': ['firsttris.vscode-jest-runner']
-      }".replace("'", "\"").as_bytes()).unwrap();
+    }
+    ".replace("'", "\"").as_bytes()).unwrap();
     Ok(())
 }
 
@@ -149,11 +126,10 @@ fn create_docker_compose_file(project_name: &str) -> std::io::Result<()> {
 
 services:
     app:
-    build: .
-    container_name: PROJECT_NAME
-    command: .docker/start.sh
-    volumes:
-        - .:/home/node/app
+        build: .
+        container_name: PROJECT_NAME
+        volumes:
+            - .:/home/node/app
           "
             .replace("PROJECT_NAME", project_name)
             .as_bytes(),
@@ -182,8 +158,6 @@ RUN mkdir -p /usr/share/man/man1 && \
 RUN npm install -g @nestjs/cli@8.2.5 npm@8.5.5
 
 ENV JAVA_HOME=\"/usr/lib/jvm/java-11-openjdk-amd64\"
-
-USER node
 
 WORKDIR /home/node/app
 
